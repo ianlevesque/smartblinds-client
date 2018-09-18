@@ -13,10 +13,15 @@ from smartblinds_client import SmartBlindsClient
 
 client = SmartBlindsClient("email", "password")
 client.login()
-blinds = client.get_blinds()
+
+blinds, rooms = client.get_blinds_and_rooms()
+print(blinds)
+print(rooms)
 print(blinds[0].name)
+
 states = client.get_blinds_state(blinds)
-print(states[blinds[0]].position)
+print(states[blinds[0].encoded_mac].position)
+
 client.set_blinds_position(blinds, 100)
 
 ```

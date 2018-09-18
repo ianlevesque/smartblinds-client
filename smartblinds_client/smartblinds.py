@@ -1,21 +1,53 @@
 import typing
-from dataclasses import dataclass
 
 from auth0.v3.authentication import Database
 import requests
 
 
-@dataclass
 class Blind:
-    name: str
-    encoded_mac: str
+    def __init__(self, name: str, encoded_mac: str, room_id: str):
+        self.name = name
+        self.encoded_mac = encoded_mac
+        self.room_id = room_id
+
+    def __repr__(self):
+        return "Blind(name='%s',encoded_mac='%s',room_id='%s')" % (
+            self.name,
+            self.encoded_mac,
+            self.room_id,
+        )
 
 
-@dataclass
 class BlindState:
-    position: int
-    rssi: int
-    battery_level: int
+    def __init__(self, position: int, rssi: int, battery_level: int):
+        self.position = position
+        self.rssi = rssi
+        self.battery_level = battery_level
+
+    def __repr__(self):
+        return "BlindState(position=%d,rssi=%d,battery_level=%d)" % (
+            self.position,
+            self.rssi,
+            self.battery_level,
+        )
+
+
+class Room:
+    def __init__(self, name: str, uuid: str, open_position: float, close_position: float, blinds: [Blind] = None):
+        self.name = name
+        self.uuid = uuid
+        self.open_position = open_position
+        self.close_position = close_position
+        self.blinds = blinds or []
+
+    def __repr__(self):
+        return "Room(name='%s',uuid='%s',open_position=%f,close_position=%f,blinds=%s)" % (
+            self.name,
+            self.uuid,
+            self.open_position,
+            self.close_position,
+            self.blinds,
+        )
 
 
 class SmartBlindsClient:
@@ -25,11 +57,7 @@ class SmartBlindsClient:
 
     GRAPHQL_ENDPOINT = "https://api.mysmartblinds.com/v1/graphql"
 
-    _username: str
-    _password: str
-    _tokens: typing.Mapping[str, str]
-
-    def __init__(self, username, password):
+    def __init__(self, username: str, password: str):
         self._username = username
         self._password = password
         self._tokens = None
@@ -43,26 +71,47 @@ class SmartBlindsClient:
 
         return self._tokens
 
-    def get_blinds(self):
-        """ Get all configured blinds """
+    def get_blinds_and_rooms(self) -> typing.Tuple[typing.List[Blind], typing.List[Room]]:
+        """ Get all configured rooms and their blinds """
         response = self._graphql(
             query='''
                 query GetUserInfo {
                     user {
+                        rooms {
+                            id
+                            name
+                            defaultClosePosition
+                            defaultOpenPosition
+                        }
                         blinds {
                             name
                             encodedMacAddress
+                            roomId
                         }
                     }
                 }
             ''')
 
+        rooms = {}
         blinds = []
 
-        for blind in response['data']['user']['blinds']:
-            blinds.append(Blind(blind['name'], blind['encodedMacAddress']))
+        for room in response['data']['user']['rooms']:
+            rooms[room['id']] = Room(
+                room['name'],
+                room['id'],
+                room['defaultOpenPosition'],
+                room['defaultClosePosition'],
+            )
 
-        return blinds
+        for blind in response['data']['user']['blinds']:
+            blind = Blind(blind['name'], blind['encodedMacAddress'], blind['roomId'])
+            blinds.append(blind)
+
+            if blind.room_id is not None and blind.room_id in rooms:
+                room = rooms[blind.room_id]
+                room.blinds.append(blind)
+
+        return blinds, list(rooms.values())
 
     def get_blinds_state(self, blinds: [Blind]) -> typing.Mapping[str, BlindState]:
         response = self._graphql(
@@ -77,12 +126,12 @@ class SmartBlindsClient:
                 }
             ''',
             variables={
-                'blinds': list(map(lambda b: b.encoded_mac, blinds))
+                'blinds': list(map(lambda b: b.encoded_mac, blinds)),
             })
 
         return self._parse_states(response)
 
-    def set_blinds_position(self, blinds: [Blind], position: int):
+    def set_blinds_position(self, blinds: [Blind], position: int) -> typing.Mapping[str, BlindState]:
         response = self._graphql(
             query='''
                 mutation UpdateBlindsPosition($blinds: [String], $position: Int!) {
@@ -92,11 +141,11 @@ class SmartBlindsClient:
                         rssi
                         batteryLevel
                     }
-                }        
+                }
             ''',
             variables={
                 'position': position,
-                'blinds': list(map(lambda b: b.encoded_mac, blinds))
+                'blinds': list(map(lambda b: b.encoded_mac, blinds)),
             })
 
         return self._parse_states(response)
@@ -128,7 +177,7 @@ class SmartBlindsClient:
         response.raise_for_status()
         return response.json()
 
-    def _auth_header(self):
+    def _auth_header(self) -> str:
         if self._tokens is None:
             self.login()
 
