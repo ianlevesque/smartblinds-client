@@ -14,7 +14,7 @@ setup(
     url='http://github.com/ianlevesque/smartblinds-client',
     author='Ian Levesque',
     author_email='ian@ianlevesque.org',
-    packages=['smartblinds-client'],
+    packages=['smartblinds_client'],
     install_requires=['auth0-python', 'requests'],
     long_description_content_type="text/markdown",
     classifiers=[
