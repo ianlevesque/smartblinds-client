@@ -154,11 +154,18 @@ class SmartBlindsClient:
     def _parse_states(response) -> typing.Mapping[str, BlindState]:
         blind_states = {}
 
-        for blind_state in response['data']['blindsState']:
-            blind_states[blind_state['encodedMacAddress']] = BlindState(
-                position=blind_state['position'],
-                rssi=blind_state['rssi'],
-                battery_level=blind_state['batteryLevel'])
+        if 'blindsState' in response['data']:
+            for blind_state in response['data']['blindsState']:
+                blind_states[blind_state['encodedMacAddress']] = BlindState(
+                    position=blind_state['position'],
+                    rssi=blind_state['rssi'],
+                    battery_level=blind_state['batteryLevel'])
+        elif 'updateBlindsPosition' in response['data']:
+            for blind_state in response['data']['updateBlindsPosition']:
+                blind_states[blind_state['encodedMacAddress']] = BlindState(
+                    position=blind_state['position'],
+                    rssi=blind_state['rssi'],
+                    battery_level=blind_state['batteryLevel'])
 
         return blind_states
 
