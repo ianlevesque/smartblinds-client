@@ -1,1 +1,6 @@
-from .smartblinds import SmartBlindsClient
+from .smartblinds import (
+    SmartBlindsClient,
+    Blind,
+    BlindState,
+    Room
+)

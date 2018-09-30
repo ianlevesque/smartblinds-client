@@ -148,24 +148,17 @@ class SmartBlindsClient:
                 'blinds': list(map(lambda b: b.encoded_mac, blinds)),
             })
 
-        return self._parse_states(response)
+        return self._parse_states(response, 'updateBlindsPosition')
 
     @staticmethod
-    def _parse_states(response) -> typing.Mapping[str, BlindState]:
+    def _parse_states(response, key='blindsState') -> typing.Mapping[str, BlindState]:
         blind_states = {}
 
-        if 'blindsState' in response['data']:
-            for blind_state in response['data']['blindsState']:
-                blind_states[blind_state['encodedMacAddress']] = BlindState(
-                    position=blind_state['position'],
-                    rssi=blind_state['rssi'],
-                    battery_level=blind_state['batteryLevel'])
-        elif 'updateBlindsPosition' in response['data']:
-            for blind_state in response['data']['updateBlindsPosition']:
-                blind_states[blind_state['encodedMacAddress']] = BlindState(
-                    position=blind_state['position'],
-                    rssi=blind_state['rssi'],
-                    battery_level=blind_state['batteryLevel'])
+        for blind_state in response['data'][key]:
+            blind_states[blind_state['encodedMacAddress']] = BlindState(
+                position=blind_state['position'],
+                rssi=blind_state['rssi'],
+                battery_level=blind_state['batteryLevel'])
 
         return blind_states
 
