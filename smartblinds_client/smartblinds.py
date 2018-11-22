@@ -2,19 +2,30 @@ import typing
 
 from auth0.v3.authentication import Database
 import requests
+import base64
 
 
 class Blind:
-    def __init__(self, name: str, encoded_mac: str, room_id: str):
+    def __init__(self, name: str, encoded_mac: str, room_id: str, encoded_passkey: str):
         self.name = name
         self.encoded_mac = encoded_mac
         self.room_id = room_id
+        self.encoded_passkey = encoded_passkey
+
+    @property
+    def mac_address(self):
+        return base64.b64decode(self.encoded_mac)
+
+    @property
+    def passkey(self):
+        return base64.b64decode(self.encoded_passkey)
 
     def __repr__(self):
-        return "Blind(name='%s',encoded_mac='%s',room_id='%s')" % (
+        return "Blind(name='%s',encoded_mac='%s',room_id='%s',encoded_passkey='%s')" % (
             self.name,
             self.encoded_mac,
             self.room_id,
+            self.encoded_passkey,
         )
 
 
@@ -86,6 +97,7 @@ class SmartBlindsClient:
                         blinds {
                             name
                             encodedMacAddress
+                            encodedPasskey
                             roomId
                         }
                     }
@@ -104,7 +116,7 @@ class SmartBlindsClient:
             )
 
         for blind in response['data']['user']['blinds']:
-            blind = Blind(blind['name'], blind['encodedMacAddress'], blind['roomId'])
+            blind = Blind(blind['name'], blind['encodedMacAddress'], blind['roomId'], blind['encodedPasskey'])
             blinds.append(blind)
 
             if blind.room_id is not None and blind.room_id in rooms:
