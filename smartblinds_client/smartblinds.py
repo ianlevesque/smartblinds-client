@@ -93,12 +93,14 @@ class SmartBlindsClient:
                             name
                             defaultClosePosition
                             defaultOpenPosition
+                            deleted
                         }
                         blinds {
                             name
                             encodedMacAddress
                             encodedPasskey
                             roomId
+                            deleted
                         }
                     }
                 }
@@ -108,20 +110,22 @@ class SmartBlindsClient:
         blinds = []
 
         for room in response['data']['user']['rooms']:
-            rooms[room['id']] = Room(
-                room['name'],
-                room['id'],
-                room['defaultOpenPosition'],
-                room['defaultClosePosition'],
-            )
+            if not room['deleted']:
+                rooms[room['id']] = Room(
+                    room['name'],
+                    room['id'],
+                    room['defaultOpenPosition'],
+                    room['defaultClosePosition'],
+                )
 
         for blind in response['data']['user']['blinds']:
-            blind = Blind(blind['name'], blind['encodedMacAddress'], blind['roomId'], blind['encodedPasskey'])
-            blinds.append(blind)
+            if not blind['deleted']:
+                blind = Blind(blind['name'], blind['encodedMacAddress'], blind['roomId'], blind['encodedPasskey'])
+                blinds.append(blind)
 
-            if blind.room_id is not None and blind.room_id in rooms:
-                room = rooms[blind.room_id]
-                room.blinds.append(blind)
+                if blind.room_id is not None and blind.room_id in rooms:
+                    room = rooms[blind.room_id]
+                    room.blinds.append(blind)
 
         return blinds, list(rooms.values())
 
