@@ -1,0 +1,1117 @@
+# source: https://api.mysmartblinds.com/v1/graphql
+# timestamp: Fri Mar 29 2019 13:42:49 GMT+0000 (Greenwich Mean Time)
+
+schema {
+  query: BlindAPIQueries
+  mutation: BlindAPIMutations
+}
+
+"""A blind"""
+type Blind {
+  """id of user that added the blind"""
+  userId: String!
+
+  """unique identifier for blind"""
+  id: String
+
+  """id of the room that blind is in"""
+  roomId: String
+
+  """battery percent from 0 to 100"""
+  batteryPercent: Int!
+
+  """user visable name of the blind"""
+  name: String!
+
+  """false until blind is synced with room information"""
+  hasSyncedPositions: Boolean!
+
+  """false until blind is synced with room information"""
+  hasSyncedSchedule: Boolean!
+
+  """
+  4 byte timestamp in seconds since Jan 1, 2001 when name is updated on the blind
+  """
+  lastUpdateName: Int!
+
+  """
+  4 byte timestamp in seconds since Jan 1, 2001 when status is updated on the blind
+  """
+  lastUpdateStatus: Int!
+
+  """unique id given by the blind itself in bytes encoded as base64"""
+  encodedMacAddress: String!
+
+  """key needed to communicate with the blind in bytes encoded as base64"""
+  encodedPasskey: String!
+
+  """flag to change out passkey on next connect"""
+  passkeyNeedsChanging: Boolean!
+
+  """
+  changes the rotation direction depending on which way the blind was installed
+  """
+  reverseRotation: Boolean!
+
+  """orientation of the installed blind"""
+  orientation: Int
+
+  """whether or not object is deleted"""
+  deleted: Boolean!
+
+  """unix timestamp when object was created"""
+  createdAt: Float!
+
+  """unix timestamp when object was last updated on the server"""
+  updatedAt: Float!
+
+  """
+  unix timestamp when object was last updated on the client. It is the client's
+  responsibility to provide this. By default, the server won't update an object
+  if the clientUpdatedAt is larger (later) than what is provide in the mutation
+  """
+  clientUpdatedAt: Float!
+}
+
+"""All the mutations"""
+type BlindAPIMutations {
+  """
+  Move blinds through the API if user has a bridge connected. Position must be
+  between 0-200. Up to 7 blinds can be moved at once. Returns the same
+  information as the blindsState query. If a blind can't be reached, the state
+  returned will show a position and battery level of -1. Returns a GraphQL error
+  if the bridge doesn't respond.
+  """
+  updateBlindsPosition(encodedMacAddresses: [String], position: Int!): [BlindState]
+
+  """
+  Move blinds to smart positions through the API if user has a bridge connected.
+  Up to 7 blinds can be moved at once. Returns the same information as the
+  blindsState query. If a blind can't be reached, the state returned will show a
+  position and battery level of -1. Returns a GraphQL error if the bridge
+  doesn't respond.
+  """
+  updateBlindsSmartPosition(encodedMacAddresses: [String], smartPosition: SmartPosition!): [BlindState]
+
+  """update the logged in user"""
+  updateUser(user: UserInput): UpdateStatus
+  updateBlinds(blinds: [BlindInput]): UpdateStatus
+  updateRooms(rooms: [RoomInput]): UpdateStatus
+  updateSmartSwitches(smartSwitches: [SmartSwitchInput]): UpdateStatus
+  updateHubs(hubs: [HubInput]): UpdateStatus
+  createDebugInfos(debugInfos: [DebugInfoInput]): UpdateStatus
+  createDebugLogs(debugLogs: [DebugLogInput]): UpdateStatus
+  createSensorData(sensorData: [SensorDataInput]): UpdateStatus
+}
+
+"""All the queries"""
+type BlindAPIQueries {
+  """
+  fetch the logged in user and all rooms and blinds associated with the user
+  """
+  user: User
+
+  """
+  Gets the current state of blinds through the API if user has a bridge
+  connected. If a blind can't be reached, the state returned will show a
+  position and battery level of -1. Returns a GraphQL error if the bridge
+  doesn't respond.
+  """
+  blindsState(encodedMacAddresses: [String]): [BlindState]
+  sendIdentifyHubCommand(encodedMacAddress: String): String
+  sendUpgradeNordicCommand(encodedMacAddress: String): String
+  blinds: [Blind]
+  rooms: [Room]
+  smartSwitches: [SmartSwitch]
+  hubs: [Hub]
+  debugInfos: [DebugInfo]
+  debugLogs: [DebugLog]
+  sensorData: [SensorData]
+  blindFirmwarePackage(current: FirmwarePackageBlindInput!, protocolVersion: Int = 2): FirmwarePackageInfoBlind!
+  blindBetaFirmwarePackage(current: FirmwarePackageBlindBetaInput!, protocolVersion: Int = 2): FirmwarePackageInfoBlindBeta!
+  smartSwitchFirmwarePackage(current: FirmwarePackageSmartSwitchInput!, protocolVersion: Int = 2): FirmwarePackageInfoSmartSwitch!
+  smartSwitchBetaFirmwarePackage(current: FirmwarePackageSmartSwitchBetaInput!, protocolVersion: Int = 2): FirmwarePackageInfoSmartSwitchBeta!
+}
+
+"""A blind"""
+input BlindInput {
+  """unique identifier for blind"""
+  id: String = "function v4(options, buf, offset) {\\n  var i = buf && offset || 0;\\n\\n  if (typeof(options) == 'string') {\\n    buf = options === 'binary' ? new Array(16) : null;\\n    options = null;\\n  }\\n  options = options || {};\\n\\n  var rnds = options.random || (options.rng || rng)();\\n\\n  // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`\\n  rnds[6] = (rnds[6] & 0x0f) | 0x40;\\n  rnds[8] = (rnds[8] & 0x3f) | 0x80;\\n\\n  // Copy bytes to buffer, if provided\\n  if (buf) {\\n    for (var ii = 0; ii < 16; ++ii) {\\n      buf[i + ii] = rnds[ii];\\n    }\\n  }\\n\\n  return buf || bytesToUuid(rnds);\\n}"
+
+  """id of the room that blind is in"""
+  roomId: String
+
+  """battery percent from 0 to 100"""
+  batteryPercent: Int!
+
+  """user visable name of the blind"""
+  name: String!
+
+  """false until blind is synced with room information"""
+  hasSyncedPositions: Boolean!
+
+  """false until blind is synced with room information"""
+  hasSyncedSchedule: Boolean!
+
+  """
+  4 byte timestamp in seconds since Jan 1, 2001 when name is updated on the blind
+  """
+  lastUpdateName: Int!
+
+  """
+  4 byte timestamp in seconds since Jan 1, 2001 when status is updated on the blind
+  """
+  lastUpdateStatus: Int!
+
+  """unique id given by the blind itself in bytes encoded as base64"""
+  encodedMacAddress: String!
+
+  """key needed to communicate with the blind in bytes encoded as base64"""
+  encodedPasskey: String!
+
+  """flag to change out passkey on next connect"""
+  passkeyNeedsChanging: Boolean!
+
+  """
+  changes the rotation direction depending on which way the blind was installed
+  """
+  reverseRotation: Boolean!
+
+  """orientation of the installed blind"""
+  orientation: Int
+
+  """whether or not object is deleted"""
+  deleted: Boolean!
+
+  """
+  unix timestamp when object was last updated on the client. It is the client's
+  responsibility to provide this. By default, the server won't update an object
+  if the clientUpdatedAt is larger (later) than what is provide in the mutation
+  """
+  clientUpdatedAt: Float!
+
+  """bypasses the clientUpdatedAt timestamp check for mutations"""
+  forceWrite: Boolean
+}
+
+type BlindState {
+  """Base64 encoded string of MAC Address bytes."""
+  encodedMacAddress: String!
+
+  """Number between 0-200. -1 if position is unknown."""
+  position: Int!
+
+  """
+  Measurement of signal strength. Values are negative and numbers closer to 0 indicate better signal strength.
+  """
+  rssi: Int!
+
+  """Number between 0-100. -1 if level is unknown."""
+  batteryLevel: Int!
+}
+
+"""debug Info and logs"""
+type DebugInfo {
+  """id of user"""
+  userId: String!
+  recordedTimestamp: Float!
+
+  """blind id"""
+  blindId: String!
+
+  """blind name"""
+  blindName: String
+
+  """The debug data"""
+  debugData: String!
+
+  """user's email"""
+  userEmail: String!
+
+  """unix timestamp when object was created"""
+  createdAt: Float!
+
+  """unix timestamp when object was last updated on the server"""
+  updatedAt: Float!
+}
+
+"""debug Info and logs"""
+input DebugInfoInput {
+  recordedTimestamp: Float! = 1553862725.229
+
+  """blind id"""
+  blindId: String!
+
+  """blind name"""
+  blindName: String
+
+  """The debug data"""
+  debugData: String!
+
+  """user's email"""
+  userEmail: String!
+}
+
+"""A debugLog"""
+type DebugLog {
+  """user id for the debugLog"""
+  userId: String!
+  recordedTimestamp: Float!
+
+  """installation id for the debugLog"""
+  installationId: String
+
+  """log File Name for the debugLog"""
+  logFileName: String!
+
+  """log File Url for the debugLog"""
+  logFileUrl: String!
+
+  """user Email for the debugLog"""
+  userEmail: String!
+
+  """unix timestamp when object was created"""
+  createdAt: Float!
+
+  """unix timestamp when object was last updated on the server"""
+  updatedAt: Float!
+}
+
+"""A debugLog"""
+input DebugLogInput {
+  recordedTimestamp: Float! = 1553862725.23
+
+  """installation id for the debugLog"""
+  installationId: String
+
+  """log File Name for the debugLog"""
+  logFileName: String!
+
+  """log File Url for the debugLog"""
+  logFileUrl: String!
+
+  """user Email for the debugLog"""
+  userEmail: String!
+}
+
+"""firmware for Blind"""
+type FirmwareBlind {
+  """BLE_APP, BLE_DFU, or MCU_APP + hardware version (BLE_APP_v12)"""
+  hardware: String
+
+  """unique id for the the firmware package"""
+  version: Int
+
+  """data url"""
+  url: String!
+
+  """unix timestamp when object was created"""
+  createdAt: Float!
+
+  """unix timestamp when object was last updated on the server"""
+  updatedAt: Float!
+}
+
+"""installation firmware package"""
+type FirmwarePackageBlind {
+  """
+  id and version of the firmware package. Major version is 100s place and up.
+  Minor version is 1s and 10s place. (ex. Version 1.5 -> 105. Version 0.10 -> 10)
+  """
+  version: Int!
+
+  """
+  hardware version the update is for. 10s place is major, 1s place is minor (ex. 1.2 -> 12)
+  """
+  hardwareVersion: Int!
+
+  """
+  minimum version of the firmware package that needs to be install prior to this one
+  """
+  prerequisiteVersion: Int
+
+  """Version of communication protocol the firmware supports"""
+  protocolVersion: Int!
+
+  """
+  version of the BLE Stack firmware. Major version is 100s place and up. Minor
+  version is 1s and 10s place. (ex. Version 1.5 -> 105. Version 0.10 -> 10)
+  """
+  BLEStackVersion: Int!
+
+  """
+  version of the MCU Bootloader firmware. Major version is 100s place and up.
+  Minor version is 1s and 10s place. (ex. Version 1.5 -> 105. Version 0.10 -> 10)
+  """
+  MCUBootloaderVersion: Int!
+
+  """unix timestamp when object was created"""
+  createdAt: Float!
+
+  """unix timestamp when object was last updated on the server"""
+  updatedAt: Float!
+  BLEApplication: FirmwareBlind!
+  BLEBootloader: FirmwareBlind!
+  MCUApplication: FirmwareBlind!
+}
+
+"""installation firmware package"""
+type FirmwarePackageBlindBeta {
+  """
+  id and version of the firmware package. Major version is 100s place and up.
+  Minor version is 1s and 10s place. (ex. Version 1.5 -> 105. Version 0.10 -> 10)
+  """
+  version: Int!
+
+  """
+  hardware version the update is for. 10s place is major, 1s place is minor (ex. 1.2 -> 12)
+  """
+  hardwareVersion: Int!
+
+  """
+  minimum version of the firmware package that needs to be install prior to this one
+  """
+  prerequisiteVersion: Int
+
+  """Version of communication protocol the firmware supports"""
+  protocolVersion: Int!
+
+  """
+  version of the BLE Stack firmware. Major version is 100s place and up. Minor
+  version is 1s and 10s place. (ex. Version 1.5 -> 105. Version 0.10 -> 10)
+  """
+  BLEStackVersion: Int!
+
+  """
+  version of the MCU Bootloader firmware. Major version is 100s place and up.
+  Minor version is 1s and 10s place. (ex. Version 1.5 -> 105. Version 0.10 -> 10)
+  """
+  MCUBootloaderVersion: Int!
+
+  """unix timestamp when object was created"""
+  createdAt: Float!
+
+  """unix timestamp when object was last updated on the server"""
+  updatedAt: Float!
+  BLEApplication: FirmwareBlind!
+  BLEBootloader: FirmwareBlind!
+  MCUApplication: FirmwareBlind!
+}
+
+"""installation firmware package"""
+input FirmwarePackageBlindBetaInput {
+  """
+  hardware version the update is for. 10s place is major, 1s place is minor (ex. 1.2 -> 12)
+  """
+  hardwareVersion: Int!
+
+  """
+  version of the BLE Application firmware. Major version is 100s place and up.
+  Minor version is 1s and 10s place. (ex. Version 1.5 -> 105. Version 0.10 -> 10)
+  """
+  BLEApplicationVersion: Int!
+
+  """
+  version of the BLE Stack firmware. Major version is 100s place and up. Minor
+  version is 1s and 10s place. (ex. Version 1.5 -> 105. Version 0.10 -> 10)
+  """
+  BLEStackVersion: Int!
+
+  """
+  version of the BLE Bootloader firmware. Major version is 100s place and up.
+  Minor version is 1s and 10s place. (ex. Version 1.5 -> 105. Version 0.10 -> 10)
+  """
+  BLEBootloaderVersion: Int!
+
+  """
+  version of the MCU Application firmware. Major version is 100s place and up.
+  Minor version is 1s and 10s place. (ex. Version 1.5 -> 105. Version 0.10 -> 10)
+  """
+  MCUApplicationVersion: Int!
+
+  """
+  version of the MCU Bootloader firmware. Major version is 100s place and up.
+  Minor version is 1s and 10s place. (ex. Version 1.5 -> 105. Version 0.10 -> 10)
+  """
+  MCUBootloaderVersion: Int!
+}
+
+"""installation firmware package"""
+input FirmwarePackageBlindInput {
+  """
+  hardware version the update is for. 10s place is major, 1s place is minor (ex. 1.2 -> 12)
+  """
+  hardwareVersion: Int!
+
+  """
+  version of the BLE Application firmware. Major version is 100s place and up.
+  Minor version is 1s and 10s place. (ex. Version 1.5 -> 105. Version 0.10 -> 10)
+  """
+  BLEApplicationVersion: Int!
+
+  """
+  version of the BLE Stack firmware. Major version is 100s place and up. Minor
+  version is 1s and 10s place. (ex. Version 1.5 -> 105. Version 0.10 -> 10)
+  """
+  BLEStackVersion: Int!
+
+  """
+  version of the BLE Bootloader firmware. Major version is 100s place and up.
+  Minor version is 1s and 10s place. (ex. Version 1.5 -> 105. Version 0.10 -> 10)
+  """
+  BLEBootloaderVersion: Int!
+
+  """
+  version of the MCU Application firmware. Major version is 100s place and up.
+  Minor version is 1s and 10s place. (ex. Version 1.5 -> 105. Version 0.10 -> 10)
+  """
+  MCUApplicationVersion: Int!
+
+  """
+  version of the MCU Bootloader firmware. Major version is 100s place and up.
+  Minor version is 1s and 10s place. (ex. Version 1.5 -> 105. Version 0.10 -> 10)
+  """
+  MCUBootloaderVersion: Int!
+}
+
+type FirmwarePackageInfoBlind {
+  currentPackage: FirmwarePackageBlind
+  currentIsMatch: Boolean!
+  upgradePackage: FirmwarePackageBlind
+}
+
+type FirmwarePackageInfoBlindBeta {
+  currentPackage: FirmwarePackageBlindBeta
+  currentIsMatch: Boolean!
+  upgradePackage: FirmwarePackageBlindBeta
+}
+
+type FirmwarePackageInfoSmartSwitch {
+  currentPackage: FirmwarePackageSmartSwitch
+  currentIsMatch: Boolean!
+  upgradePackage: FirmwarePackageSmartSwitch
+}
+
+type FirmwarePackageInfoSmartSwitchBeta {
+  currentPackage: FirmwarePackageSmartSwitchBeta
+  currentIsMatch: Boolean!
+  upgradePackage: FirmwarePackageSmartSwitchBeta
+}
+
+"""installation firmware package"""
+type FirmwarePackageSmartSwitch {
+  """
+  id and version of the firmware package. Major version is 100s place and up.
+  Minor version is 1s and 10s place. (ex. Version 1.5 -> 105. Version 0.10 -> 10)
+  """
+  version: Int!
+
+  """
+  hardware version the update is for. 10s place is major, 1s place is minor (ex. 1.2 -> 12)
+  """
+  hardwareVersion: Int!
+
+  """
+  minimum version of the firmware package that needs to be install prior to this one
+  """
+  prerequisiteVersion: Int
+
+  """Version of communication protocol the firmware supports"""
+  protocolVersion: Int!
+
+  """unix timestamp when object was created"""
+  createdAt: Float!
+
+  """unix timestamp when object was last updated on the server"""
+  updatedAt: Float!
+  BLEApplication: FirmwareSmartSwitch!
+}
+
+"""installation firmware package"""
+type FirmwarePackageSmartSwitchBeta {
+  """
+  id and version of the firmware package. Major version is 100s place and up.
+  Minor version is 1s and 10s place. (ex. Version 1.5 -> 105. Version 0.10 -> 10)
+  """
+  version: Int!
+
+  """
+  hardware version the update is for. 10s place is major, 1s place is minor (ex. 1.2 -> 12)
+  """
+  hardwareVersion: Int!
+
+  """
+  minimum version of the firmware package that needs to be install prior to this one
+  """
+  prerequisiteVersion: Int
+
+  """Version of communication protocol the firmware supports"""
+  protocolVersion: Int!
+
+  """unix timestamp when object was created"""
+  createdAt: Float!
+
+  """unix timestamp when object was last updated on the server"""
+  updatedAt: Float!
+  BLEApplication: FirmwareSmartSwitch!
+}
+
+"""installation firmware package"""
+input FirmwarePackageSmartSwitchBetaInput {
+  """
+  hardware version the update is for. 10s place is major, 1s place is minor (ex. 1.2 -> 12)
+  """
+  hardwareVersion: Int!
+
+  """
+  version of the BLE Application firmware. Major version is 100s place and up.
+  Minor version is 1s and 10s place. (ex. Version 1.5 -> 105. Version 0.10 -> 10)
+  """
+  BLEApplicationVersion: Int!
+}
+
+"""installation firmware package"""
+input FirmwarePackageSmartSwitchInput {
+  """
+  hardware version the update is for. 10s place is major, 1s place is minor (ex. 1.2 -> 12)
+  """
+  hardwareVersion: Int!
+
+  """
+  version of the BLE Application firmware. Major version is 100s place and up.
+  Minor version is 1s and 10s place. (ex. Version 1.5 -> 105. Version 0.10 -> 10)
+  """
+  BLEApplicationVersion: Int!
+}
+
+"""firmware for SmartSwitch"""
+type FirmwareSmartSwitch {
+  """BLE_APP, BLE_DFU, or MCU_APP + hardware version (BLE_APP_v12)"""
+  hardware: String
+
+  """unique id for the the firmware package"""
+  version: Int
+
+  """data url"""
+  url: String!
+
+  """unix timestamp when object was created"""
+  createdAt: Float!
+
+  """unix timestamp when object was last updated on the server"""
+  updatedAt: Float!
+}
+
+"""A hub"""
+type Hub {
+  """id of user that added the hub"""
+  userId: String!
+
+  """unique identifier for hub"""
+  id: String
+  certificateId: String!
+
+  """user visable name of the hub"""
+  name: String!
+
+  """TODO: will be an enum with values: NONE, CLIENT_STARTED, COMPLETE"""
+  provisionState: String!
+  wifiVersion: String!
+  nordicVersion: String!
+  encodedMacAddress: String!
+  rssi: Int!
+
+  """whether or not object is deleted"""
+  deleted: Boolean!
+
+  """unix timestamp when object was created"""
+  createdAt: Float!
+
+  """unix timestamp when object was last updated on the server"""
+  updatedAt: Float!
+
+  """
+  unix timestamp when object was last updated on the client. It is the client's
+  responsibility to provide this. By default, the server won't update an object
+  if the clientUpdatedAt is larger (later) than what is provide in the mutation
+  """
+  clientUpdatedAt: Float!
+}
+
+"""A hub"""
+input HubInput {
+  """unique identifier for hub"""
+  id: String = "function v4(options, buf, offset) {\\n  var i = buf && offset || 0;\\n\\n  if (typeof(options) == 'string') {\\n    buf = options === 'binary' ? new Array(16) : null;\\n    options = null;\\n  }\\n  options = options || {};\\n\\n  var rnds = options.random || (options.rng || rng)();\\n\\n  // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`\\n  rnds[6] = (rnds[6] & 0x0f) | 0x40;\\n  rnds[8] = (rnds[8] & 0x3f) | 0x80;\\n\\n  // Copy bytes to buffer, if provided\\n  if (buf) {\\n    for (var ii = 0; ii < 16; ++ii) {\\n      buf[i + ii] = rnds[ii];\\n    }\\n  }\\n\\n  return buf || bytesToUuid(rnds);\\n}"
+  certificateId: String!
+
+  """user visable name of the hub"""
+  name: String!
+
+  """TODO: will be an enum with values: NONE, CLIENT_STARTED, COMPLETE"""
+  provisionState: String!
+  wifiVersion: String!
+  nordicVersion: String!
+  encodedMacAddress: String!
+  rssi: Int!
+
+  """whether or not object is deleted"""
+  deleted: Boolean!
+
+  """
+  unix timestamp when object was last updated on the client. It is the client's
+  responsibility to provide this. By default, the server won't update an object
+  if the clientUpdatedAt is larger (later) than what is provide in the mutation
+  """
+  clientUpdatedAt: Float!
+
+  """bypasses the clientUpdatedAt timestamp check for mutations"""
+  forceWrite: Boolean
+}
+
+"""installation type"""
+type Installation {
+  """installation user id"""
+  userId: String!
+
+  """installation id"""
+  id: String
+
+  """device token"""
+  deviceToken: String!
+
+  """device type"""
+  deviceType: String!
+
+  """time zone of where app was installation"""
+  timeZone: String
+
+  """version of app installation"""
+  appVersion: String
+
+  """unix timestamp when object was created"""
+  createdAt: Float!
+
+  """unix timestamp when object was last updated on the server"""
+  updatedAt: Float!
+}
+
+"""installation type"""
+input InstallationInput {
+  """installation id"""
+  id: String = "function v4(options, buf, offset) {\\n  var i = buf && offset || 0;\\n\\n  if (typeof(options) == 'string') {\\n    buf = options === 'binary' ? new Array(16) : null;\\n    options = null;\\n  }\\n  options = options || {};\\n\\n  var rnds = options.random || (options.rng || rng)();\\n\\n  // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`\\n  rnds[6] = (rnds[6] & 0x0f) | 0x40;\\n  rnds[8] = (rnds[8] & 0x3f) | 0x80;\\n\\n  // Copy bytes to buffer, if provided\\n  if (buf) {\\n    for (var ii = 0; ii < 16; ++ii) {\\n      buf[i + ii] = rnds[ii];\\n    }\\n  }\\n\\n  return buf || bytesToUuid(rnds);\\n}"
+
+  """device token"""
+  deviceToken: String!
+
+  """device type"""
+  deviceType: String!
+
+  """time zone of where app was installation"""
+  timeZone: String
+
+  """version of app installation"""
+  appVersion: String
+}
+
+type ObjectUpdateStatus {
+  type: String!
+  primaryKeyName: String!
+  primaryKeyValue: String!
+  sortKeyName: String
+  sortKeyValue: String
+}
+
+"""A room that has blinds in it"""
+type Room {
+  """id of user that created the blind"""
+  userId: String!
+
+  """unique id for the room"""
+  id: String
+
+  """
+  blind position between 0 and 1: 0 is closed tilted down, 1 is closed tilted up
+  """
+  defaultClosePosition: Float!
+
+  """
+  blind position between 0 and 1: 0 is closed tilted down, 1 is closed tilted upg
+  """
+  defaultOpenPosition: Float!
+
+  """
+  4 byte timestamp in seconds since Jan 1, 2001 when either open or close position was updated on the blind
+  """
+  lastUpdateDefaultPositions: Int!
+
+  """
+  4 byte timestamp in seconds since Jan 1, 2001 when schedule was updated on the blind
+  """
+  lastUpdateSchedule: Int!
+
+  """user visable name of the room"""
+  name: String!
+
+  """
+  encoded string representing the schedule for opening and closing the blinds in the room
+  """
+  scheduleData: String
+  energySavingsEnabled: Boolean
+  energySavingsTemperatureSetPoint: Float
+  energySavingsPosition: Float
+  energySavingsResumeEnabled: Boolean
+
+  """whether or not object is deleted"""
+  deleted: Boolean!
+
+  """unix timestamp when object was created"""
+  createdAt: Float!
+
+  """unix timestamp when object was last updated on the server"""
+  updatedAt: Float!
+
+  """
+  unix timestamp when object was last updated on the client. It is the client's
+  responsibility to provide this. By default, the server won't update an object
+  if the clientUpdatedAt is larger (later) than what is provide in the mutation
+  """
+  clientUpdatedAt: Float!
+}
+
+"""A room that has blinds in it"""
+input RoomInput {
+  """unique id for the room"""
+  id: String = "function v4(options, buf, offset) {\\n  var i = buf && offset || 0;\\n\\n  if (typeof(options) == 'string') {\\n    buf = options === 'binary' ? new Array(16) : null;\\n    options = null;\\n  }\\n  options = options || {};\\n\\n  var rnds = options.random || (options.rng || rng)();\\n\\n  // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`\\n  rnds[6] = (rnds[6] & 0x0f) | 0x40;\\n  rnds[8] = (rnds[8] & 0x3f) | 0x80;\\n\\n  // Copy bytes to buffer, if provided\\n  if (buf) {\\n    for (var ii = 0; ii < 16; ++ii) {\\n      buf[i + ii] = rnds[ii];\\n    }\\n  }\\n\\n  return buf || bytesToUuid(rnds);\\n}"
+
+  """
+  blind position between 0 and 1: 0 is closed tilted down, 1 is closed tilted up
+  """
+  defaultClosePosition: Float! = 1
+
+  """
+  blind position between 0 and 1: 0 is closed tilted down, 1 is closed tilted upg
+  """
+  defaultOpenPosition: Float! = 0.5
+
+  """
+  4 byte timestamp in seconds since Jan 1, 2001 when either open or close position was updated on the blind
+  """
+  lastUpdateDefaultPositions: Int!
+
+  """
+  4 byte timestamp in seconds since Jan 1, 2001 when schedule was updated on the blind
+  """
+  lastUpdateSchedule: Int!
+
+  """user visable name of the room"""
+  name: String!
+
+  """
+  encoded string representing the schedule for opening and closing the blinds in the room
+  """
+  scheduleData: String
+  energySavingsEnabled: Boolean
+  energySavingsTemperatureSetPoint: Float
+  energySavingsPosition: Float
+  energySavingsResumeEnabled: Boolean
+
+  """whether or not object is deleted"""
+  deleted: Boolean!
+
+  """
+  unix timestamp when object was last updated on the client. It is the client's
+  responsibility to provide this. By default, the server won't update an object
+  if the clientUpdatedAt is larger (later) than what is provide in the mutation
+  """
+  clientUpdatedAt: Float!
+
+  """bypasses the clientUpdatedAt timestamp check for mutations"""
+  forceWrite: Boolean
+}
+
+"""Sensor Data"""
+type SensorData {
+  """Sensor Data user id"""
+  userId: String!
+  recordedTimestamp: Float!
+
+  """Sensor Data blind name"""
+  blindName: String
+
+  """Sensor Data installation Id"""
+  installationID: String!
+
+  """Sensor Data room name"""
+  roomName: String
+
+  """Sensor Data user email"""
+  userEmail: String!
+
+  """ Number of Sensor Data readings"""
+  numberOfReadings: Float!
+
+  """Sensor Data Name"""
+  sensorDataName: String!
+
+  """Sensor Data URL"""
+  sensorDataUrl: String!
+
+  """Sensor Data timstamp"""
+  timestamp: Float!
+
+  """unix timestamp when object was created"""
+  createdAt: Float!
+
+  """unix timestamp when object was last updated on the server"""
+  updatedAt: Float!
+}
+
+"""Sensor Data"""
+input SensorDataInput {
+  recordedTimestamp: Float! = 1553862725.231
+
+  """Sensor Data blind name"""
+  blindName: String
+
+  """Sensor Data installation Id"""
+  installationID: String!
+
+  """Sensor Data room name"""
+  roomName: String
+
+  """Sensor Data user email"""
+  userEmail: String!
+
+  """ Number of Sensor Data readings"""
+  numberOfReadings: Float!
+
+  """Sensor Data Name"""
+  sensorDataName: String!
+
+  """Sensor Data URL"""
+  sensorDataUrl: String!
+
+  """Sensor Data timstamp"""
+  timestamp: Float!
+}
+
+enum SmartPosition {
+  OPEN
+  CLOSE
+}
+
+"""A Smart Switch"""
+type SmartSwitch {
+  """switch user id"""
+  userId: String!
+
+  """smart switch id"""
+  id: String
+  name: String
+  encodedMacAddress: String!
+
+  """blue group array"""
+  blueGroup: [String]
+  greenGroup: [String]
+  redGroup: [String]
+  whiteGroup: [String]
+  yellowGroup: [String]
+  bottomSwitchDefaultBlue: Float
+  bottomSwitchDefaultGreen: Float
+  bottomSwitchDefaultRed: Float
+  bottomSwitchDefaultWhite: Float
+  bottomSwitchDefaultYellow: Float
+  topSwitchDefaultBlue: Float
+  topSwitchDefaultGreen: Float
+  topSwitchDefaultRed: Float
+  topSwitchDefaultWhite: Float
+  topSwitchDefaultYellow: Float
+
+  """whether or not object is deleted"""
+  deleted: Boolean!
+
+  """unix timestamp when object was created"""
+  createdAt: Float!
+
+  """unix timestamp when object was last updated on the server"""
+  updatedAt: Float!
+
+  """
+  unix timestamp when object was last updated on the client. It is the client's
+  responsibility to provide this. By default, the server won't update an object
+  if the clientUpdatedAt is larger (later) than what is provide in the mutation
+  """
+  clientUpdatedAt: Float!
+}
+
+"""A Smart Switch"""
+input SmartSwitchInput {
+  """smart switch id"""
+  id: String = "function v4(options, buf, offset) {\\n  var i = buf && offset || 0;\\n\\n  if (typeof(options) == 'string') {\\n    buf = options === 'binary' ? new Array(16) : null;\\n    options = null;\\n  }\\n  options = options || {};\\n\\n  var rnds = options.random || (options.rng || rng)();\\n\\n  // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`\\n  rnds[6] = (rnds[6] & 0x0f) | 0x40;\\n  rnds[8] = (rnds[8] & 0x3f) | 0x80;\\n\\n  // Copy bytes to buffer, if provided\\n  if (buf) {\\n    for (var ii = 0; ii < 16; ++ii) {\\n      buf[i + ii] = rnds[ii];\\n    }\\n  }\\n\\n  return buf || bytesToUuid(rnds);\\n}"
+  name: String
+  encodedMacAddress: String!
+
+  """blue group array"""
+  blueGroup: [String]
+  greenGroup: [String]
+  redGroup: [String]
+  whiteGroup: [String]
+  yellowGroup: [String]
+  bottomSwitchDefaultBlue: Float
+  bottomSwitchDefaultGreen: Float
+  bottomSwitchDefaultRed: Float
+  bottomSwitchDefaultWhite: Float
+  bottomSwitchDefaultYellow: Float
+  topSwitchDefaultBlue: Float
+  topSwitchDefaultGreen: Float
+  topSwitchDefaultRed: Float
+  topSwitchDefaultWhite: Float
+  topSwitchDefaultYellow: Float
+
+  """whether or not object is deleted"""
+  deleted: Boolean!
+
+  """
+  unix timestamp when object was last updated on the client. It is the client's
+  responsibility to provide this. By default, the server won't update an object
+  if the clientUpdatedAt is larger (later) than what is provide in the mutation
+  """
+  clientUpdatedAt: Float!
+
+  """bypasses the clientUpdatedAt timestamp check for mutations"""
+  forceWrite: Boolean
+}
+
+type UpdateStatus {
+  notUpdated: [ObjectUpdateStatus]
+  updated: [ObjectUpdateStatus]
+  success: Boolean
+}
+
+"""A user"""
+type User {
+  """unique id for the user"""
+  id: String!
+
+  """user's email address"""
+  email: String!
+
+  """whether or not the user has varified the email address"""
+  emailVerified: Boolean!
+
+  """
+  blind position between 0 and 1: 0 is closed tilted down, 1 is closed tilted up
+  """
+  globalSmartClosePosition: Float!
+
+  """
+  blind position between 0 and 1: 0 is closed tilted down, 1 is closed tilted up
+  """
+  globalSmartOpenPosition: Float!
+
+  """
+  4 byte timestamp since Jan 1, 2001 when either the global open or close position is changed
+  """
+  lastUpdatedGlobalPositionTimestamp: Int!
+
+  """latitude of where the user is located when setting up blinds"""
+  latitude: Float
+
+  """longitute of where the user is located when setting up blinds"""
+  longitude: Float
+
+  """City, State of where user is located when setting up blinds"""
+  locationDescription: String
+
+  """Unix timestamp of when the authentication token expires"""
+  tokenExpiration: Float
+
+  """whether or not object is deleted"""
+  deleted: Boolean!
+
+  """unix timestamp when object was created"""
+  createdAt: Float!
+
+  """unix timestamp when object was last updated on the server"""
+  updatedAt: Float!
+
+  """
+  unix timestamp when object was last updated on the client. It is the client's
+  responsibility to provide this. By default, the server won't update an object
+  if the clientUpdatedAt is larger (later) than what is provide in the mutation
+  """
+  clientUpdatedAt: Float!
+
+  """All the rooms for the user"""
+  rooms: [Room]
+
+  """All the blinds for the user"""
+  blinds: [Blind]
+
+  """All the smart switches for the user"""
+  smartSwitches: [SmartSwitch]
+
+  """All the hubs for the user"""
+  hubs: [Hub]
+
+  """All the device installations for the user"""
+  installations: [Installation]
+}
+
+"""A user"""
+input UserInput {
+  """user's email address"""
+  email: String!
+
+  """
+  blind position between 0 and 1: 0 is closed tilted down, 1 is closed tilted up
+  """
+  globalSmartClosePosition: Float! = 1
+
+  """
+  blind position between 0 and 1: 0 is closed tilted down, 1 is closed tilted up
+  """
+  globalSmartOpenPosition: Float! = 0.5
+
+  """
+  4 byte timestamp since Jan 1, 2001 when either the global open or close position is changed
+  """
+  lastUpdatedGlobalPositionTimestamp: Int!
+
+  """latitude of where the user is located when setting up blinds"""
+  latitude: Float
+
+  """longitute of where the user is located when setting up blinds"""
+  longitude: Float
+
+  """City, State of where user is located when setting up blinds"""
+  locationDescription: String
+
+  """whether or not object is deleted"""
+  deleted: Boolean!
+
+  """
+  unix timestamp when object was last updated on the client. It is the client's
+  responsibility to provide this. By default, the server won't update an object
+  if the clientUpdatedAt is larger (later) than what is provide in the mutation
+  """
+  clientUpdatedAt: Float!
+
+  """bypasses the clientUpdatedAt timestamp check for mutations"""
+  forceWrite: Boolean
+
+  """All the rooms for the user"""
+  rooms: [RoomInput]
+
+  """All the blinds for the user"""
+  blinds: [BlindInput]
+
+  """All the smart switches for the user"""
+  smartSwitches: [SmartSwitchInput]
+
+  """All the hubs for the user"""
+  hubs: [HubInput]
+
+  """All the device installations for the user"""
+  installations: [InstallationInput]
+}
