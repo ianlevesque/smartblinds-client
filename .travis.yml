@@ -1,0 +1,17 @@
+dist: xenial
+language: python
+python:
+  - "3.5"
+  - "3.6"
+  - "3.7"
+script:
+  - python setup.py -q install
+deploy:
+  provider: pypi
+  user: ianlevesque
+  password:
+    secure: jKkR2GUtIaue9tBP2Bab2HTBFyOBMD89oR6QkgReMml4MMTBCXtT4/V8DYLg8phtLuTf6e/yP1Y7sWnj9uc8aaE2Cbiw5Ms8XA+IHL5XbYzjMN/1Dfw8pY3bFXsLgFVG2wDtrhquYiLW/TuXQCW+jw52ELM/VSa0+3y53aAj4MwjQtGmnp9HHFTefrBdjuOHqQcNO05R+oXecgUV4JgzY8+HAeMEbEtSjsLt4a8SiG1KARn9RkGHHaNYulcEv168HS/E4LIyFGOTzbN+t/FzTsY1YhPMq+0XoEWrOpILAjuxPk1j3gGPV0ncCWwsGveoPmhZa4cDpwUreBRUNkNlvSLWFDoyAYYYdQsI1/VVVif5bAHsWk3nVdcQsHRpUA8C+KugfpLzV1QGTgWjYwymmeF9YJVjYOV+ZMED7TvFI7vzaasYJFiYRAoaem9pq9i/o8aa7/XdWgME/tiawInWneO0lG0TBeswRW/MfWjfz7OJDw4foUmpHZ2mnqoTORg+czrc6gOiR4SNI6D35udOc/nC+rxqn8LWk9lWEvjmy4kymnS3NZrOdQQUF7WTl0MQbhSvFw0RNFCUA5w3/FZkHpBrCbky6/JP74+wpOkVMNbgvBJ3NAXZZQB+J5ysy8ra4YvszNFWJPK4xCe/KPqd/C+4r1DaBgAHOCtyD8n9H58=
+  on:
+    tags: true
+  distributions: "sdist bdist_wheel"
+  skip_existing: true
