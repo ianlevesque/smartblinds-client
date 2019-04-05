@@ -138,22 +138,25 @@ class SmartBlindsClient:
         return blinds, list(rooms.values())
 
     def get_blinds_state(self, blinds: [Blind]) -> typing.Mapping[str, BlindState]:
-        response = self._graphql(
-            query='''
-                query GetBlindsState($blinds: [String]) {
-                    blindsState(encodedMacAddresses: $blinds) {
-                        encodedMacAddress
-                        position
-                        rssi
-                        batteryLevel
+        blind_states = {}
+        for blinds_batch in chunks(blinds, self.BATCH_SIZE):
+            response = self._graphql(
+                query='''
+                    query GetBlindsState($blinds: [String]) {
+                        blindsState(encodedMacAddresses: $blinds) {
+                            encodedMacAddress
+                            position
+                            rssi
+                            batteryLevel
+                        }
                     }
-                }
-            ''',
-            variables={
-                'blinds': list(map(lambda b: b.encoded_mac, blinds)),
-            })
+                ''',
+                variables={
+                    'blinds': list(map(lambda b: b.encoded_mac, blinds)),
+                })
+            blind_states.update(self._parse_states(response))
 
-        return self._parse_states(response)
+        return blind_states
 
     def set_blinds_position(self, blinds: [Blind], position: int) -> typing.Mapping[str, BlindState]:
         blind_states = {}
