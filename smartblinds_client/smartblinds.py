@@ -5,6 +5,12 @@ import requests
 import base64
 
 
+def chunks(l, n):
+    """Yield successive n-sized chunks from l."""
+    for i in range(0, len(l), n):
+        yield l[i:i + n]
+
+
 class Blind:
     def __init__(self, name: str, encoded_mac: str, room_id: str, encoded_passkey: str):
         self.name = name
@@ -68,6 +74,8 @@ class SmartBlindsClient:
 
     GRAPHQL_ENDPOINT = "https://api.mysmartblinds.com/v1/graphql"
 
+    BATCH_SIZE = 7
+
     def __init__(self, username: str, password: str):
         self._username = username
         self._password = password
@@ -130,41 +138,47 @@ class SmartBlindsClient:
         return blinds, list(rooms.values())
 
     def get_blinds_state(self, blinds: [Blind]) -> typing.Mapping[str, BlindState]:
-        response = self._graphql(
-            query='''
-                query GetBlindsState($blinds: [String]) {
-                    blindsState(encodedMacAddresses: $blinds) {
-                        encodedMacAddress
-                        position
-                        rssi
-                        batteryLevel
+        blind_states = {}
+        for blinds_batch in chunks(blinds, self.BATCH_SIZE):
+            response = self._graphql(
+                query='''
+                    query GetBlindsState($blinds: [String]) {
+                        blindsState(encodedMacAddresses: $blinds) {
+                            encodedMacAddress
+                            position
+                            rssi
+                            batteryLevel
+                        }
                     }
-                }
-            ''',
-            variables={
-                'blinds': list(map(lambda b: b.encoded_mac, blinds)),
-            })
+                ''',
+                variables={
+                    'blinds': list(map(lambda b: b.encoded_mac, blinds)),
+                })
+            blind_states.update(self._parse_states(response))
 
-        return self._parse_states(response)
+        return blind_states
 
     def set_blinds_position(self, blinds: [Blind], position: int) -> typing.Mapping[str, BlindState]:
-        response = self._graphql(
-            query='''
-                mutation UpdateBlindsPosition($blinds: [String], $position: Int!) {
-                    updateBlindsPosition(encodedMacAddresses: $blinds, position: $position) {
-                        encodedMacAddress
-                        position
-                        rssi
-                        batteryLevel
+        blind_states = {}
+        for blinds_batch in chunks(blinds, self.BATCH_SIZE):
+            response = self._graphql(
+                query='''
+                    mutation UpdateBlindsPosition($blinds: [String], $position: Int!) {
+                        updateBlindsPosition(encodedMacAddresses: $blinds, position: $position) {
+                            encodedMacAddress
+                            position
+                            rssi
+                            batteryLevel
+                        }
                     }
-                }
-            ''',
-            variables={
-                'position': position,
-                'blinds': list(map(lambda b: b.encoded_mac, blinds)),
-            })
+                ''',
+                variables={
+                    'position': position,
+                    'blinds': list(map(lambda b: b.encoded_mac, blinds_batch)),
+                })
+            blind_states.update(self._parse_states(response, 'updateBlindsPosition'))
 
-        return self._parse_states(response, 'updateBlindsPosition')
+        return blind_states
 
     @staticmethod
     def _parse_states(response, key='blindsState') -> typing.Mapping[str, BlindState]:
