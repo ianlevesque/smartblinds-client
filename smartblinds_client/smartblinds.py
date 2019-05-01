@@ -152,7 +152,7 @@ class SmartBlindsClient:
                     }
                 ''',
                 variables={
-                    'blinds': list(map(lambda b: b.encoded_mac, blinds)),
+                    'blinds': list(map(lambda b: b.encoded_mac, blinds_batch)),
                 })
             blind_states.update(self._parse_states(response))
 
